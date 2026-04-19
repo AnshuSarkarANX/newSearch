@@ -1,60 +1,77 @@
 import requests
 from datetime import datetime, timezone
 from xml.etree import ElementTree as ET
+from email.utils import parsedate_to_datetime
 from es_client import index_article
 
-RSS_URL = "https://feeds.arstechnica.com/arstechnica/index"
+
+RSS_FEEDS = [
+    "https://feeds.arstechnica.com/arstechnica/index",
+    "https://feeds.arstechnica.com/arstechnica/technology-lab",
+    "https://feeds.arstechnica.com/arstechnica/gadgets",
+    "https://feeds.arstechnica.com/arstechnica/science",
+    "https://feeds.arstechnica.com/arstechnica/gaming",
+    "https://feeds.arstechnica.com/arstechnica/security",
+]
+
+NS = {
+    "content": "http://purl.org/rss/1.0/modules/content/",
+    "dc":      "http://purl.org/dc/elements/1.1/"
+}
+
 
 def crawl_arstechnica():
     print("Crawling Ars Technica via RSS...")
-    try:
-        res  = requests.get(RSS_URL, timeout=10)
-        root = ET.fromstring(res.content)
-        ns   = {"content": "http://purl.org/rss/1.0/modules/content/",
-                "dc":      "http://purl.org/dc/elements/1.1/"}
+    count = 0
+    seen_urls = set()
 
-        items = root.findall(".//item")
-        count = 0
-        for item in items[:120]:
-            try:
-                title   = item.findtext("title", "").strip()
-                url     = item.findtext("link",  "").strip()
-                summary = item.findtext("description", "").strip()[:600]
-                author  = item.findtext("dc:creator", "Ars Technica", ns).strip()
+    for rss_url in RSS_FEEDS:
+        try:
+            res  = requests.get(rss_url, timeout=10)
+            root = ET.fromstring(res.content)
 
-                # Extract image from enclosure or media
-                image_url = None
-                enclosure = item.find("enclosure")
-                if enclosure is not None:
-                    image_url = enclosure.get("url")
-
-                # Parse date
-                pub_date = item.findtext("pubDate", "")
+            for item in root.findall(".//item"):
                 try:
-                    from email.utils import parsedate_to_datetime
-                    published_at = parsedate_to_datetime(pub_date).isoformat()
-                except:
-                    published_at = datetime.now(timezone.utc).isoformat()
+                    url = item.findtext("link", "").strip()
+                    if not url or url in seen_urls:
+                        continue
+                    seen_urls.add(url)
 
-                # Tags from categories
-                tags = [c.text.lower() for c in item.findall("category") if c.text]
+                    title   = item.findtext("title", "").strip()
+                    summary = item.findtext("description", "").strip()[:600]
+                    author  = item.findtext("dc:creator", "Ars Technica", NS).strip()
 
-                index_article({
-                    "title":        title,
-                    "summary":      summary,
-                    "author":       author,
-                    "source":       "arstechnica",
-                    "url":          url,
-                    "tags":         tags,
-                    "image_url":    image_url,
-                    "published_at": published_at,
-                    "indexed_at":   datetime.now(timezone.utc).isoformat()
-                })
-                count += 1
-            except Exception as e:
-                print(f"  Ars item error: {e}")
-                continue
+                    image_url = None
+                    enclosure = item.find("enclosure")
+                    if enclosure is not None:
+                        image_url = enclosure.get("url")
 
-        print(f"  Ars Technica: indexed {count} articles")
-    except Exception as e:
-        print(f"  Ars Technica RSS failed: {e}")
+                    pub_date = item.findtext("pubDate", "")
+                    try:
+                        published_at = parsedate_to_datetime(pub_date).isoformat()
+                    except:
+                        published_at = datetime.now(timezone.utc).isoformat()
+
+                    tags = [c.text.lower() for c in item.findall("category") if c.text]
+
+                    index_article({
+                        "title":        title,
+                        "summary":      summary,
+                        "author":       author,
+                        "source":       "arstechnica",
+                        "url":          url,
+                        "tags":         tags,
+                        "image_url":    image_url,
+                        "published_at": published_at,
+                        "indexed_at":   datetime.now(timezone.utc).isoformat()
+                    })
+                    count += 1
+                except Exception as e:
+                    print(f"  Ars item error: {e}")
+                    continue
+
+        except Exception as e:
+            print(f"  Ars feed error ({rss_url}): {e}")
+            continue
+
+    print(f"  Ars Technica: indexed {count} articles")
