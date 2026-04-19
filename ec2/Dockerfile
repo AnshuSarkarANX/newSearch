@@ -6,6 +6,11 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget \
     gnupg \
+    gcc \
+    g++ \
+    make \
+    libxml2-dev \
+    libxslt-dev \
     ca-certificates \
     fonts-liberation \
     fonts-unifont \
@@ -31,7 +36,6 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install WITHOUT --with-deps (deps already installed above)
 RUN playwright install chromium
 
 COPY . .
