@@ -25,7 +25,7 @@ def run_all_crawlers():
     crawl_hackernews()
     crawl_techcrunch()
     crawl_arstechnica()
-    crawl_theverge()
+  # crawl_theverge()
     print("=== Crawl cycle complete ===\n")
 
 if __name__ == "__main__":
