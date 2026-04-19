@@ -8,7 +8,7 @@ HN_ITEM_URL = "https://hacker-news.firebaseio.com/v0/item/{}.json"
 def crawl_hackernews():
     print("Fetching Hacker News...")
     try:
-        ids   = requests.get(HN_TOP_URL, timeout=10).json()[:30]
+        ids   = requests.get(HN_TOP_URL, timeout=10).json()[:130]
         count = 0
 
         for story_id in ids:

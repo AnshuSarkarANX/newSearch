@@ -13,7 +13,7 @@ def crawl_techcrunch():
         articles = soup.select("div.loop-card__content")
 
         count = 0
-        for article in articles[:20]:
+        for article in articles[:120]:
             try:
                 title_el = article.select_one("a.loop-card__title-link")
                 if not title_el:

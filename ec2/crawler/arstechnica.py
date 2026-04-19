@@ -15,7 +15,7 @@ def crawl_arstechnica():
 
         items = root.findall(".//item")
         count = 0
-        for item in items[:20]:
+        for item in items[:120]:
             try:
                 title   = item.findtext("title", "").strip()
                 url     = item.findtext("link",  "").strip()
