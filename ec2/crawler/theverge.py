@@ -1,54 +1,62 @@
-from playwright.sync_api import sync_playwright
+import requests
 from datetime import datetime, timezone
+from xml.etree import ElementTree as ET
 from es_client import index_article
 
+RSS_URL = "https://www.theverge.com/rss/index.xml"
+
 def crawl_theverge():
-    print("Crawling The Verge with Playwright...")
+    print("Crawling The Verge via RSS...")
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page    = browser.new_page()
-            page.goto("https://www.theverge.com/news", timeout=30000)
-            page.wait_for_selector("article", timeout=10000)
+        res  = requests.get(RSS_URL, timeout=10)
+        # Atom feed namespace
+        ns = {
+            "atom":    "http://www.w3.org/2005/Atom",
+            "media":   "http://search.yahoo.com/mrss/",
+            "dc":      "http://purl.org/dc/elements/1.1/"
+        }
+        root = ET.fromstring(res.content)
 
-            articles = page.query_selector_all("article")
-            count    = 0
+        entries = root.findall("atom:entry", ns)
+        count   = 0
+        for entry in entries[:20]:
+            try:
+                title   = entry.findtext("atom:title", "", ns).strip()
+                url     = entry.find("atom:link", ns)
+                url     = url.get("href") if url is not None else ""
+                summary = entry.findtext("atom:summary", "", ns).strip()[:600]
+                author  = entry.findtext("atom:author/atom:name", "The Verge", ns).strip()
 
-            for article in articles[:20]:
+                # Date
+                pub_date = entry.findtext("atom:published", "", ns)
                 try:
-                    title_el   = article.query_selector("h2")
-                    link_el    = article.query_selector("a")
-                    summary_el = article.query_selector("p")
+                    published_at = datetime.fromisoformat(pub_date.replace("Z", "+00:00")).isoformat()
+                except:
+                    published_at = datetime.now(timezone.utc).isoformat()
 
-                    if not title_el or not link_el:
-                        continue
+                # Image from media:thumbnail
+                img_el    = entry.find("media:thumbnail", ns)
+                image_url = img_el.get("url") if img_el is not None else None
 
-                    title = title_el.inner_text().strip()
-                    url   = link_el.get_attribute("href")
-                    if url and not url.startswith("http"):
-                        url = "https://www.theverge.com" + url
+                # Tags
+                tags = [c.get("term", "").lower() for c in entry.findall("atom:category", ns) if c.get("term")]
 
-                    summary   = summary_el.inner_text().strip()[:600] if summary_el else ""
-                    img_el    = article.query_selector("img")
-                    image_url = img_el.get_attribute("src") if img_el else None
+                index_article({
+                    "title":        title,
+                    "summary":      summary,
+                    "author":       author,
+                    "source":       "theverge",
+                    "url":          url,
+                    "tags":         tags,
+                    "image_url":    image_url,
+                    "published_at": published_at,
+                    "indexed_at":   datetime.now(timezone.utc).isoformat()
+                })
+                count += 1
+            except Exception as e:
+                print(f"  Verge item error: {e}")
+                continue
 
-                    index_article({
-                        "title":        title,
-                        "summary":      summary,
-                        "author":       "The Verge",
-                        "source":       "theverge",
-                        "url":          url,
-                        "tags":         ["tech"],
-                        "image_url":    image_url,
-                        "published_at": datetime.now(timezone.utc).isoformat(),
-                        "indexed_at":   datetime.now(timezone.utc).isoformat()
-                    })
-                    count += 1
-                except Exception as e:
-                    print(f"  Verge article error: {e}")
-                    continue
-
-            browser.close()
-            print(f"  The Verge: indexed {count} articles")
+        print(f"  The Verge: indexed {count} articles")
     except Exception as e:
-        print(f"  The Verge crawl failed: {e}")
+        print(f"  The Verge RSS failed: {e}")
