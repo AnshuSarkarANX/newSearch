@@ -4,7 +4,7 @@ import SearchBar  from "./components/SearchBar";
 import Filters    from "./components/Filters";
 import ResultCard  from "./components/ResultCard";
 import Pagination  from "./components/Pagination";
-import { Analytics } from "@vercel/analytics/next";
+
 
 const DEFAULT_FILTERS = { source: "all", time: "", sort: "relevant" };
 const TRENDING = ["AI", "React", "Apple", "OpenAI", "Python", "Startups", "GPT", "Android"];
