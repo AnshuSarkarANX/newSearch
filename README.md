@@ -7,7 +7,7 @@ Search across TechCrunch, Ars Technica and Hacker News — powered by Elasticsea
 | Layer          | Where        | Role                                  |
 |----------------|--------------|---------------------------------------|
 | Elasticsearch  | AWS EC2      | Stores + indexes articles             |
-| Crawler        | AWS EC2      | Crawls the sources every 30 min       |
+| Crawler        | AWS EC2      | Crawl the sources every 30 min        |
 | FastAPI API    | Render       | Handles search queries only           |
 | React Frontend | Vercel       | Search UI                             |
 
