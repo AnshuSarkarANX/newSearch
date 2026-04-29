@@ -8,8 +8,8 @@ Search across TechCrunch, Ars Technica, The Verge, and Hacker News — powered b
 |----------------|--------------|---------------------------------------|
 | Elasticsearch  | AWS EC2      | Stores + indexes articles             |
 | Crawler        | AWS EC2      | Crawls 4 sources every 30 min         |
-| FastAPI API    | Render (free)| Handles search queries only           |
-| React Frontend | Vercel (free)| Search UI                             |
+| FastAPI API    | Render       | Handles search queries only           |
+| React Frontend | Vercel       | Search UI                             |
 
 ## Folder Structure
 
