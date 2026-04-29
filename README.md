@@ -1,13 +1,13 @@
 # TechPulse — Tech News Search Engine
 
-Search across TechCrunch, Ars Technica, The Verge, and Hacker News — powered by Elasticsearch.
+Search across TechCrunch, Ars Technica and Hacker News — powered by Elasticsearch.
 
 ## Architecture
 
 | Layer          | Where        | Role                                  |
 |----------------|--------------|---------------------------------------|
 | Elasticsearch  | AWS EC2      | Stores + indexes articles             |
-| Crawler        | AWS EC2      | Crawls 4 sources every 30 min         |
+| Crawler        | AWS EC2      | Crawls 3 sources every 30 min         |
 | FastAPI API    | Render       | Handles search queries only           |
 | React Frontend | Vercel       | Search UI                             |
 
