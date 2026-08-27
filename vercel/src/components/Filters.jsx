@@ -2,8 +2,7 @@ const SOURCES = [
   { value: "all",         label: "All Sources"  },
   { value: "techcrunch",  label: "TechCrunch"   },
   { value: "arstechnica", label: "Ars Technica"  },
-  { value: "hackernews",  label: "Hacker News"  },
-  { value: "theverge",    label: "The Verge"    },
+  { value: "hackernews",  label: "Hacker News"  }
 ];
 const TIMES = [
   { value: "",      label: "Any time"    },

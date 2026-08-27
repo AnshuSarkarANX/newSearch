@@ -60,7 +60,7 @@ export default function App() {
             </svg>
             <div>
               <h1 className="text-xl font-bold text-gray-900 leading-none">TechPulse</h1>
-              <p className="text-xs text-gray-400 mt-0.5">TechCrunch · Ars Technica · The Verge · Hacker News</p>
+              <p className="text-xs text-gray-400 mt-0.5">TechCrunch · Ars Technica · Hacker News</p>
             </div>
           </div>
           <SearchBar onSearch={(q) => doSearch(q, 1)} loading={loading} />
